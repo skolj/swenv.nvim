@@ -10,6 +10,15 @@ local update_path = function(path)
   vim.fn.setenv('PATH', path .. '/bin' .. ':' .. ORIGINAL_PATH)
 end
 
+local clear_venv = function ()
+    vim.fn.setenv('CONDA_PREFIX', nil)
+    vim.fn.setenv('CONDA_DEFAULT_ENV', nil)
+    vim.fn.setenv('CONDA_PROMPT_MODIFIER', nil)
+    vim.fn.setenv('VIRTUAL_ENV', nil)
+    vim.fn.setenv('PATH', ORIGINAL_PATH)
+    current_venv = nil
+end
+
 local set_venv = function(venv)
   if venv.source == 'conda' then
     vim.fn.setenv('CONDA_PREFIX', venv.path)
@@ -22,6 +31,10 @@ local set_venv = function(venv)
   current_venv = venv
   -- TODO: remove old path
   update_path(venv.path)
+
+  if venv.source == 'deactivate' then
+    M.deactivate_venv()
+  end
 
   if settings.post_set_venv then
     settings.post_set_venv(venv)
@@ -81,6 +94,10 @@ M.get_current_venv = function()
   return current_venv
 end
 
+M.deactivate_venv = function ()
+  clear_venv()
+end
+
 M.get_venvs = function(venvs_path)
   local success, Path = pcall(require, 'plenary.path')
   if not success then
@@ -114,6 +131,14 @@ M.get_venvs = function(venvs_path)
       name = Path:new(path):make_relative(venvs_path),
       path = path,
       source = 'venv',
+    })
+  end
+
+  if #venvs ~= 0 and current_venv then
+    table.insert(venvs, {
+      name = 'Deactivate virtual environment',
+      path = '',
+      source = 'deactivate'
     })
   end
 
