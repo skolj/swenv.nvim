@@ -85,6 +85,24 @@ M.init = function()
     }
   end
 
+  if not venv then
+    local cwd_path = Path:new(vim.fn.getcwd())
+    local parent = tostring(cwd_path:parent())
+    local directory_name = cwd_path:make_relative(parent)
+
+    local existing_venv_path = Path:new(settings.venvs_path):joinpath(directory_name)
+
+    if existing_venv_path:exists() then
+      venv = {
+        name = directory_name,
+        path = tostring(existing_venv_path),
+        source = 'venv'
+      }
+      set_venv(venv)
+      return
+    end
+  end
+
   if venv then
     current_venv = venv
   end
