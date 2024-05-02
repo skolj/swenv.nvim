@@ -10,13 +10,13 @@ local update_path = function(path)
   vim.fn.setenv('PATH', path .. '/bin' .. ':' .. ORIGINAL_PATH)
 end
 
-local clear_venv = function ()
-    vim.fn.setenv('CONDA_PREFIX', nil)
-    vim.fn.setenv('CONDA_DEFAULT_ENV', nil)
-    vim.fn.setenv('CONDA_PROMPT_MODIFIER', nil)
-    vim.fn.setenv('VIRTUAL_ENV', nil)
-    vim.fn.setenv('PATH', ORIGINAL_PATH)
-    current_venv = nil
+local clear_venv = function()
+  vim.fn.setenv('CONDA_PREFIX', nil)
+  vim.fn.setenv('CONDA_DEFAULT_ENV', nil)
+  vim.fn.setenv('CONDA_PROMPT_MODIFIER', nil)
+  vim.fn.setenv('VIRTUAL_ENV', nil)
+  vim.fn.setenv('PATH', ORIGINAL_PATH)
+  current_venv = nil
 end
 
 local set_venv = function(venv)
@@ -47,7 +47,7 @@ end
 ---@param first string|nil
 ---@param second string|nil
 ---@return boolean
-local has_high_priority_in_path = function (first, second)
+local has_high_priority_in_path = function(first, second)
   if first == nil or first == vim.NIL then
     return false
   end
@@ -81,7 +81,7 @@ M.init = function()
     venv = {
       name = conda_env,
       path = vim.fn.getenv('CONDA_PREFIX'),
-      source = 'conda'
+      source = 'conda',
     }
   end
 
@@ -96,7 +96,7 @@ M.init = function()
       venv = {
         name = directory_name,
         path = tostring(existing_venv_path),
-        source = 'venv'
+        source = 'venv',
       }
       set_venv(venv)
       return
@@ -112,7 +112,7 @@ M.get_current_venv = function()
   return current_venv
 end
 
-M.deactivate_venv = function ()
+M.deactivate_venv = function()
   clear_venv()
 end
 
@@ -143,6 +143,14 @@ M.get_venvs = function(venvs_path)
 
   -- VENV
   local paths = scan_dir(venvs_path, { depth = 1, only_dirs = true, silent = true })
+  local local_venv = Path:new(vim.fn.getcwd()):joinpath('.venv')
+  if local_venv:exists() then
+    table.insert(venvs, {
+      name = '.venv',
+      path = tostring(local_venv),
+      source = 'venv',
+    })
+  end
   for _, path in ipairs(paths) do
     table.insert(venvs, {
       -- TODO how does one get the name of the file directly?
@@ -156,7 +164,7 @@ M.get_venvs = function(venvs_path)
     table.insert(venvs, {
       name = 'Deactivate virtual environment',
       path = '',
-      source = 'deactivate'
+      source = 'deactivate',
     })
   end
 
